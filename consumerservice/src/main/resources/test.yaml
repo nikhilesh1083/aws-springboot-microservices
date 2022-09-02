@@ -1,0 +1,169 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Stack to create resource through infrastructure as code.
+Parameters:
+  DomainURL:
+    Type: String
+    Description: Redirect URIs for your app
+Resources:
+  ProductsTable:
+    Type: 'AWS::DynamoDB::Table'
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: productId
+          AttributeType: S
+      BillingMode: PROVISIONED
+      KeySchema:
+        - AttributeName: productId
+          KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+      SSESpecification:
+        SSEEnabled: false
+      TableName: Products
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: d44b21d2-6107-43ae-844a-dee7d40f146d
+  BasketTable:
+    Type: 'AWS::DynamoDB::Table'
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: basketId
+          AttributeType: S
+      BillingMode: PROVISIONED
+      KeySchema:
+        - AttributeName: basketId
+          KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+      SSESpecification:
+        SSEEnabled: false
+      TableName: Basket
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 1d2a40f8-a163-415d-b588-79e7f21f3e39
+  S3Bucket:
+    Type: 'AWS::S3::Bucket'
+    DeletionPolicy: Retain
+    Properties:
+      BucketName: mybucket-122121
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: ade5bab6-9979-4359-bf27-dce8f62b8b6d
+  MyQueue:
+    Type: 'AWS::SQS::Queue'
+    Properties:
+      QueueName: checkout-queue
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 236dbecc-8464-4b29-80b6-d2c962453ec1
+  MySNSTopic:
+    Type: 'AWS::SNS::Topic'
+    Properties:
+      Subscription:
+        - Endpoint: test@example.com
+          Protocol: email
+      TopicName: sendNotification
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 3f161422-368e-4751-8bd4-a80bd8036011
+  UserPool:
+    Type: 'AWS::Cognito::UserPool'
+    Properties:
+      UserPoolName: sample-authentication-pool
+      AdminCreateUserConfig:
+        AllowAdminCreateUserOnly: false
+      UsernameConfiguration:
+        CaseSensitive: true
+      AliasAttributes:
+        - email
+        - preferred_username
+      EmailConfiguration:
+        EmailSendingAccount: COGNITO_DEFAULT
+      MfaConfiguration: 'OFF'
+  UserPoolClient:
+    Type: 'AWS::Cognito::UserPoolClient'
+    Properties:
+      UserPoolId: !Ref UserPool
+      ClientName: my-website
+      ExplicitAuthFlows:
+        - ALLOW_USER_SRP_AUTH
+        - ALLOW_REFRESH_TOKEN_AUTH
+      GenerateSecret: true
+      AllowedOAuthFlowsUserPoolClient: true
+      AllowedOAuthFlows:
+        - code
+      AllowedOAuthScopes:
+        - email
+        - openid
+        - phone
+        - profile
+        - aws.cognito.signin.user.admin
+      EnableTokenRevocation: true
+      PreventUserExistenceErrors: ENABLED
+      AccessTokenValidity: 1
+      IdTokenValidity: 1
+      RefreshTokenValidity: 30
+      SupportedIdentityProviders:
+        - COGNITO
+      CallbackURLs:
+        - 'http://localhost'
+Outputs:
+  ProductsTableArn:
+    Description: ProductsTableArn DynamoDB table ARN.
+    Value: !GetAtt ProductsTable.Arn
+    Export:
+      Name: ProductsTableArn
+  ProductsTableName:
+    Description: ProductsTableArn DynamoDB table name.
+    Value: !Ref ProductsTable
+    Export:
+      Name: ProductsTableName
+  BasketTableArn:
+    Description: ProductsTableArn DynamoDB table ARN.
+    Value: !GetAtt BasketTable.Arn
+    Export:
+      Name: BasketTableArn
+  BasketTableName:
+    Description: ProductsTableArn DynamoDB table name.
+    Value: !Ref BasketTable
+    Export:
+      Name: BasketTableName
+  BucketArn:
+    Description: S3 Bucket ARN.
+    Value: !GetAtt S3Bucket.Arn
+    Export:
+      Name: BucketArn
+  BasketName:
+    Description: S3 Bucket name.
+    Value: !Ref S3Bucket
+    Export:
+      Name: BasketName
+  QueueURL:
+    Description: URL of new Amazon SQS Queue
+    Value:
+      Ref: MyQueue
+    Export:
+      Name: QueueURL
+  QueueARN:
+    Description: ARN of new AmazonSQS Queue
+    Value:
+      'Fn::GetAtt':
+        - MyQueue
+        - Arn
+    Export:
+      Name: QueueARN
+  QueueName:
+    Description: Name of new Amazon SQS Queue
+    Value:
+      'Fn::GetAtt':
+        - MyQueue
+        - QueueName
+    Export:
+      Name: QueueName
+  ClientID:
+    Description: AWS Cognito
+    Value: !Ref UserPoolClient
+    Export:
+      Name: ClientID
