@@ -1,0 +1,5 @@
+org\usecase\scenario1\DynamoService.class
+org\usecase\scenario1\Product.class
+org\usecase\scenario1\LambdaHandlerFuc.class
+org\usecase\scenario1\S3Service.class
+org\usecase\scenario1\CSVHandler.class

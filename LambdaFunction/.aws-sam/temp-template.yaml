@@ -1,0 +1,11 @@
+Resources:
+  Function:
+    Type: AWS::Serverless::Function
+    Properties:
+      Timeout: 300
+      MemorySize: 128
+      Handler: org.usecase.scenario1.LambdaHandlerFuc
+      CodeUri: C:\Users\nikhilesh.macherla\IdeaProjects\UseCaseScenario1
+      Runtime: java11
+      Architectures:
+        - x86_64
